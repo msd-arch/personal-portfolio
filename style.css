@@ -1,0 +1,882 @@
+/* ==========================================================================
+   Muhammad Saad — Portfolio
+   Theme: "drafting sheet" — cobalt ink on paper, a faint measuring grid,
+   monospace sheet labels, and a dimension line as the signature element.
+   Pure HTML + CSS. No frameworks, no JavaScript.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Light palette — cool drafting paper */
+  --paper:      #EEF1F7;
+  --paper-2:    #E4E9F3;
+  --surface:    #FFFFFF;
+  --ink:        #131A2E;
+  --ink-soft:   #4C5772;
+  --line:       #C6CEDF;
+  --accent:     #2545E6;   /* cobalt: links, ticks, focus */
+  --accent-ink: #FFFFFF;
+  --signal:     #E8A317;   /* amber: used sparingly, one job only */
+
+  /* Type */
+  --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --body:    "Instrument Sans", system-ui, -apple-system, sans-serif;
+  --mono:    "JetBrains Mono", ui-monospace, "Courier New", monospace;
+
+  /* Rhythm */
+  --gutter: 1.5rem;
+  --measure: 76rem;
+  --radius: 4px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Dark mode — driven by the hidden checkbox in the markup, no JS involved. */
+body:has(#theme:checked) {
+  --paper:    #0B1020;
+  --paper-2:  #0F1628;
+  --surface:  #131B31;
+  --ink:      #E9EEFA;
+  --ink-soft: #96A3C2;
+  --line:     #29344F;
+  --accent:   #8AA0FF;
+  --accent-ink: #0B1020;
+  --signal:   #F0B840;
+}
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;      /* required: smooth scrolling */
+  scroll-padding-top: 6rem;     /* keeps anchors clear of the fixed nav */
+}
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  /* The measuring grid: two hairline gradients, 32px pitch. */
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s var(--ease), color 0.35s var(--ease);
+}
+
+/* The grid should whisper, not shout. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  opacity: 0.88;
+  pointer-events: none;
+  z-index: -1;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: var(--accent); text-decoration: none; }
+
+h1, h2, h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+p { margin: 0 0 1rem; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: min(100% - (var(--gutter) * 2), var(--measure));
+  margin-inline: auto;
+}
+
+/* Visually hidden, still focusable by keyboard. */
+.theme-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body:has(#theme:focus-visible) .toggle__track {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 99;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+}
+
+/* Shared drafting label used above every section */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Navigation
+   -------------------------------------------------------------------------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav__inner {
+  width: min(100% - (var(--gutter) * 2), var(--measure));
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 4.5rem;
+}
+
+.nav__mark {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--ink);
+}
+
+.nav__mark-box {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--ink);
+  padding: 0.25rem 0.4rem;
+  border-radius: 2px;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.nav__mark:hover .nav__mark-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.nav__mark-text {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.nav__links {
+  display: flex;
+  gap: 1.4rem;
+}
+
+.nav__links a {
+  position: relative;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  padding-block: 0.35rem;
+  transition: color 0.2s var(--ease);
+}
+
+/* Hover animation: an underline drawn left to right, like a ruled line. */
+.nav__links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1px;
+  width: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s var(--ease);
+}
+
+.nav__links a:hover,
+.nav__links a:focus-visible { color: var(--ink); }
+.nav__links a:hover::after { transform: scaleX(1); }
+
+/* Theme toggle (label bound to the hidden checkbox) */
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle__track {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  flex: none;
+}
+
+.toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: transform 0.3s var(--ease);
+}
+
+body:has(#theme:checked) .toggle__knob { transform: translateX(20px); }
+
+.toggle__label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.toggle__label--dark { display: none; }
+body:has(#theme:checked) .toggle__label--light { display: none; }
+body:has(#theme:checked) .toggle__label--dark { display: inline; }
+
+/* --------------------------------------------------------------------------
+   4. Hero
+   -------------------------------------------------------------------------- */
+.hero {
+  padding-block: clamp(4rem, 12vw, 8.5rem) clamp(3.5rem, 9vw, 6rem);
+}
+
+.hero__name {
+  font-size: clamp(3.2rem, 13vw, 9rem);
+  font-variation-settings: "wdth" 92;
+  letter-spacing: -0.045em;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Signature: the dimension line measuring the name ------------------- */
+.dimension {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.dimension__tick {
+  width: 1px;
+  height: 14px;
+  background: var(--accent);
+  flex: none;
+}
+
+.dimension__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: draw 1s var(--ease) both;
+}
+
+.dimension__rule:last-of-type { transform-origin: right; }
+
+.dimension__value {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+@keyframes draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.hero__lede {
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  max-width: 46ch;
+  color: var(--ink-soft);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.hero__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1.5rem;
+  margin: 3.5rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.hero__facts dt {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.3rem;
+}
+
+.hero__facts dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   5. Buttons
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-block;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease),
+              color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.btn--solid {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 -3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.btn--ghost:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* --------------------------------------------------------------------------
+   6. Section shell
+   -------------------------------------------------------------------------- */
+.section {
+  padding-block: clamp(3.5rem, 9vw, 6.5rem);
+  border-top: 1px solid var(--line);
+}
+
+.section--tint {
+  background: color-mix(in srgb, var(--paper-2) 75%, transparent);
+}
+
+.section__head {
+  margin-bottom: 3rem;
+  max-width: 55ch;
+}
+
+.section__title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-variation-settings: "wdth" 95;
+}
+
+.section__note {
+  color: var(--ink-soft);
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+
+.side__title {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* --------------------------------------------------------------------------
+   7. About
+   -------------------------------------------------------------------------- */
+.about {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 4.5rem);
+  align-items: start;
+}
+
+.about__body .lead {
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin-bottom: 1.5rem;
+}
+
+.about__body p { color: var(--ink-soft); max-width: 62ch; }
+.about__body .lead { color: var(--ink); }
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--line);
+}
+
+.timeline li {
+  position: relative;
+  padding: 0 0 1.75rem 1.5rem;
+}
+
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 0.55rem;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.timeline__when {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+.timeline__what {
+  display: block;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.timeline__where {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. Cards (skills + projects)
+   -------------------------------------------------------------------------- */
+.cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.cards--skills   { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.cards--projects { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  transition: transform 0.28s var(--ease), border-color 0.28s var(--ease),
+              box-shadow 0.28s var(--ease);
+}
+
+/* Hover animation: the card lifts and a corner crosshair is drawn in. */
+.card::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--accent);
+  border-right: 1px solid var(--accent);
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition: opacity 0.28s var(--ease), transform 0.28s var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 30px -18px color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.card:hover::after {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.card__index {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--signal);
+}
+
+.card__title {
+  font-size: 1.35rem;
+  margin: 0.4rem 0 0.75rem;
+}
+
+.card__tags,
+.card__stack {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.card--project .card__kicker {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin: 0;
+}
+
+.card--project .card__title { font-size: 1.6rem; }
+
+.card__text {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.card--project .card__stack {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.card__links {
+  margin: 1rem 0 0;
+}
+
+.card__links a {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease);
+}
+
+.card__links a:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------------------
+   9. Education
+   -------------------------------------------------------------------------- */
+.degree {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  padding-bottom: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.degree__school { font-size: clamp(1.4rem, 3vw, 2rem); }
+
+.degree__award {
+  font-weight: 500;
+  margin: 0.4rem 0 0.75rem;
+}
+
+.degree__note {
+  color: var(--ink-soft);
+  max-width: 55ch;
+  margin: 0;
+}
+
+.degree__years {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-align: right;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.degree__years span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.plain li {
+  padding-block: 0.85rem;
+  border-bottom: 1px dashed var(--line);
+}
+
+.plain li strong { display: block; font-weight: 600; }
+
+.plain li span {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   10. Contact
+   -------------------------------------------------------------------------- */
+.contact {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 4.5rem);
+  align-items: start;
+}
+
+.form {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.field { margin-bottom: 1.25rem; }
+
+.field label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 0.45rem;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 0.6rem 0;
+  transition: border-color 0.25s var(--ease);
+  resize: vertical;
+}
+
+.field input::placeholder,
+.field textarea::placeholder { color: color-mix(in srgb, var(--ink-soft) 65%, transparent); }
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.form__note {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin: 1rem 0 0;
+}
+
+.contact__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contact__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.contact__list span {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.contact__list a {
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.contact__list a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   11. Footer
+   -------------------------------------------------------------------------- */
+.footer {
+  border-top: 1px solid var(--line);
+  padding-block: 2.5rem;
+  background: color-mix(in srgb, var(--paper-2) 75%, transparent);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footer__mark {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.footer__meta {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.footer__top {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease);
+}
+
+.footer__top:hover { border-bottom-color: var(--accent); }
+
+/* --------------------------------------------------------------------------
+   12. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .about,
+  .contact { grid-template-columns: 1fr; }
+
+  .degree { flex-direction: column; }
+  .degree__years { text-align: left; }
+}
+
+@media (max-width: 720px) {
+  .nav__inner {
+    height: auto;
+    flex-wrap: wrap;
+    padding-block: 0.75rem;
+    row-gap: 0.5rem;
+  }
+
+  .nav__mark-text { display: none; }
+
+  .nav__links {
+    order: 3;
+    width: 100%;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+
+  .nav__links::-webkit-scrollbar { display: none; }
+
+  .toggle__label { display: none; }
+  body:has(#theme:checked) .toggle__label--dark { display: none; }
+
+  .dimension__rule:first-of-type { display: none; }
+  .dimension__value { white-space: normal; }
+
+  html { scroll-padding-top: 8rem; }
+}
+
+@media (max-width: 480px) {
+  :root { --gutter: 1.1rem; }
+  .card { padding: 1.35rem; }
+}
+
+/* --------------------------------------------------------------------------
+   13. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. Print
+   -------------------------------------------------------------------------- */
+@media print {
+  .nav, .toggle, .footer__top { display: none; }
+  body { background: #fff; color: #000; }
+}
