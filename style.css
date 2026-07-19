@@ -600,6 +600,8 @@ body:has(#theme:checked) .toggle__label--dark { display: inline; }
 
 .card__links {
   margin: 1rem 0 0;
+  display: flex;
+  gap: 1rem;
 }
 
 .card__links a {
